@@ -15,6 +15,7 @@ import arcpy
 sys.path.insert(0, '../../gcbm_preprocessing')
 import preprocess_tools
 
+import pgdata
 
 
 def save_inputs():
@@ -265,6 +266,15 @@ if __name__ == "__main__":
     )
     # for spatial_input in reproject:
     #    spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
+
+    # send inventory data to postgres
+    # it may be faster to also clip with ogr2ogr but lets not bother for now
+    # use the already clipped data rather than reworking the inventory object
+    path = r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory)
+    layer = 'tsa{}'.format(TSA_number)
+    db = pgdata.connect()
+    db.ogr2pg(path, layer, 'inventory', t_srs='EPSG:4326')
+
     for spatial_input in clip:
         spatial_input.clip(
             spatial_input.getWorkspace(),

@@ -1,18 +1,20 @@
-### GCBM Preprocessing
-## Imports
-import archook
+# GCBM Preprocessing
+# Imports
 
-archook.get_arcpy()
-import arcpy
+
 import os
 import sys
 import cPickle
 import shutil
 import logging
-import collections
 
-sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
+import archook
+archook.get_arcpy()
+import arcpy
+
+sys.path.insert(0, '../../gcbm_preprocessing')
 import preprocess_tools
+
 
 
 def save_inputs():
@@ -82,6 +84,7 @@ def save_inputs():
 # AIDB [pre-setup with disturbance matrix values etc.]
 ###############################################################################
 if __name__ == "__main__":
+
     # Logging
     debug_log = r'logs\DebugLogDataPrep.log'
     if not os.path.exists(os.path.dirname(debug_log)):
@@ -94,17 +97,18 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         datefmt='%b%d %H:%M:%S',
     )
-    #### Variables
+    # Variables
+    province = "British Columbia"
     # TSA number as a string
-    TSA_number = '5'
+    TSA_number = '27'
     # TSA name, replace spaces in the name with underscores
-    TSA_name = 'Cranbrook'
+    TSA_name = 'Revelstoke'
     # directory path to the working directory for relative paths
-    working_directory = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_{}_{}'.format(
+    working_directory = r'Q:\projects\cat\2017_11_preprocessing\BC\TSA_{}_{}'.format(
         TSA_number, TSA_name
     )
     # directory path to the external data directory for relative paths
-    external_data = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\00_external_data'
+    external_data = r'Q:\projects\cat\2017_11_preprocessing\BC\00_external_data'
     # Tile resolution in degrees
     resolution = 0.001
     # The percent of harvest area slashburned in the Base scenario
@@ -206,6 +210,7 @@ if __name__ == "__main__":
         year=inventory_year,
         classifiers_attr=inventory_classifier_attr,
         field_names=inventory_field_names,
+        province=province
     )
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(
         NFDB_workspace, NFDB_filter, NFDB_year_field
@@ -253,7 +258,7 @@ if __name__ == "__main__":
     )
     inventory.clipCutPolys(
         inventory.getWorkspace(),
-        spatialBoundaries.getPathTSA(),
+        spatialBoundaries.getPath(),
         TSA_filter,
         r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory),
         name='tsa{}'.format(TSA_number),
@@ -263,11 +268,11 @@ if __name__ == "__main__":
     for spatial_input in clip:
         spatial_input.clip(
             spatial_input.getWorkspace(),
-            spatialBoundaries.getPathTSA(),
+            spatialBoundaries.getPath(),
             TSA_filter,
             spatial_input.getWorkspace().replace(
                 clipped_redirection[0], clipped_redirection[1]
-            ),
+            )
         )
     for spatial_input in copy:
         spatial_input.copy(
@@ -286,6 +291,8 @@ if __name__ == "__main__":
     # GCBM_scenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
     ## Recliner2GCBM
     recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)
+    # create path
+    os.makedirs(recliner2gcbm_config_dir)
     recliner2gcbm_output_path = r"{}\02b_recliner2GCBM_output\GCBMinput.db".format(
         working_directory
     )
@@ -318,6 +325,7 @@ if __name__ == "__main__":
         working_directory
     )
     ## Copy yield table and aidb
+
     shutil.copyfile(original_yieldTable_path, yieldTable_path)
     shutil.copyfile(original_aidb_path, aidb_path)
     ## GCBM Configuration

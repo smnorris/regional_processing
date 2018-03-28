@@ -268,11 +268,12 @@ if __name__ == "__main__":
     #    spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
 
     # send inventory data to postgres, create fishnet function
-    # it may be faster to also clip with ogr2ogr but lets not bother for now
+    # it is almost certainly faster to do the clip in this step but lets not bother
+    # for now, the clipping is all tied up in the inventory object's properties
     # use the already clipped data rather than reworking the inventory object
     path = r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory)
     layer = 'tsa{}'.format(TSA_number)
-    db_url = r'postgresql://postgres:postgres@localhost:5432/revelstoke'
+    db_url = r'postgresql://postgres:postgres@192.168.4.1:5432/revelstoke'
     db = pgdata.connect(
         db_url,
         sql_path=r'..\..\gcbm_preprocessing\01_grid_generation\sql')

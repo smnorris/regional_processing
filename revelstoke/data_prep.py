@@ -179,7 +179,7 @@ if __name__ == "__main__":
     spatial_boundaries_pspu = "PSPUS_2016.shp"
     # filter used to get the desired study area from the TSA boundaries.
     # change only the associated values for "field" and "code"
-    study_area_filter = {"field": "TSA_NUMBER", "code": "'Cranbrook TSA'"}
+    study_area_filter = {"field": "TSA_NUMBER", "code": "'Revelstoke TSA'"}
     # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {"Admin": "AdminBou_1", "Eco": "EcoBound_1"}
     # path to NAmerica MAT (Mean Annual Temperature)
@@ -267,12 +267,13 @@ if __name__ == "__main__":
     # for spatial_input in reproject:
     #    spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
 
-    # send inventory data to postgres
+    # send inventory data to postgres, create fishnet function
     # it may be faster to also clip with ogr2ogr but lets not bother for now
     # use the already clipped data rather than reworking the inventory object
     path = r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory)
     layer = 'tsa{}'.format(TSA_number)
-    db = pgdata.connect()
+    db = pgdata.connect(sql_path=r'..\..\gcbm_preprocessing\01_grid_generation\sql')
+    db.execute(db.queries['ST_Fishnet'])
     db.ogr2pg(path, layer, 'inventory', t_srs='EPSG:4326')
 
     for spatial_input in clip:

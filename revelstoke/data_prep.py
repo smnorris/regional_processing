@@ -272,7 +272,10 @@ if __name__ == "__main__":
     # use the already clipped data rather than reworking the inventory object
     path = r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory)
     layer = 'tsa{}'.format(TSA_number)
-    db = pgdata.connect(sql_path=r'..\..\gcbm_preprocessing\01_grid_generation\sql')
+    db_url = r'postgresql://postgres:postgres@localhost:5432/revelstoke'
+    db = pgdata.connect(
+        db_url,
+        sql_path=r'..\..\gcbm_preprocessing\01_grid_generation\sql')
     db.execute(db.queries['ST_Fishnet'])
     db.ogr2pg(path, layer, 'inventory', t_srs='EPSG:4326')
 

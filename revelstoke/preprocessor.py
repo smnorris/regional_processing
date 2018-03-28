@@ -11,11 +11,13 @@ import arcpy
 sys.path.insert(0, '../../gcbm_preprocessing')
 import preprocess_tools
 
+import pgdata
+
 gridGeneration = __import__("01_grid_generation")
-rollback = __import__("02_rollback")
-tiler_imp = __import__("03_tiler")
-recliner2GCBM = __import__("04_recliner2GCBM")
-GCBMconfig = __import__("05_GCBM_config")
+#rollback = __import__("02_rollback")
+#tiler_imp = __import__("03_tiler")
+#recliner2GCBM = __import__("04_recliner2GCBM")
+#GCBMconfig = __import__("05_GCBM_config")
 
 
 def save_inputs():
@@ -71,6 +73,7 @@ def save_inputs():
 
 def load_inputs():
     global inventory
+    """
     global historicFire1
     global historicFire2
     global historicHarvest
@@ -101,11 +104,13 @@ def load_inputs():
     global reportingIndicators
     global gcbm_exe
     global area_majority_rule
+    """
     try:
         logging.info(
             'Loading inputs from {}'.format(os.path.join(os.getcwd(), 'inputs'))
         )
         inventory = cPickle.load(open(r'inputs\inventory.pkl'))
+        """
         historicFire1 = cPickle.load(open(r'inputs\historicFire1.pkl'))
         historicFire2 = cPickle.load(open(r'inputs\historicFire2.pkl'))
         historicHarvest = cPickle.load(open(r'inputs\historicHarvest.pkl'))
@@ -141,6 +146,7 @@ def load_inputs():
         reportingIndicators = cPickle.load(open(r'inputs\reportingIndicators.pkl'))
         gcbm_exe = cPickle.load(open(r'inputs\gcbm_exe.pkl'))
         area_majority_rule = cPickle.load(open(r'inputs\area_majority_rule.pkl'))
+        """
         logging.info('Loaded inputs.')
     except:
         raise IOError("Failed to load inputs")
@@ -185,12 +191,21 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         datefmt='%b%d %H:%M:%S',
     )
-    load_inputs()
+    #load_inputs()
+    db_url = r'postgresql://postgres:postgres@192.168.4.1:5432/revelstoke'
+    db = pgdata.connect(
+        db_url,
+        sql_path=r'..\..\gcbm_preprocessing\01_grid_generation\sql')
+    fishnet = gridGeneration.create_grid.fishnet(db, 'inventory', 'fishnet', .001)
+
+    """
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
+
     inventoryGridder = gridGeneration.grid_inventory.GridInventory(
         inventory, future_dist_input_dir, PP, area_majority_rule
     )
+
     mergeDist = rollback.merge_disturbances.MergeDisturbances(
         inventory, [historicFire1, historicFire2, historicHarvest], PP
     )
@@ -253,10 +268,14 @@ if __name__ == "__main__":
         ProgressPrinter=PP,
     )
     ### Execute Functions
+
     # -- Grid generation
     fishnet = gridGeneration.create_grid.fishnet(inventory, resolution)
+
+
     # -- Grid inventory
     inventoryGridder.gridInventory()
+
     if not rollback_enabled:  # ***
         inventoryGridder.exportInventory(inventory_raster_out, resolution)  # ***
     else:  # ***
@@ -295,3 +314,4 @@ if __name__ == "__main__":
     gcbmConfigurer.configureGCBM(
         recliner2gcbm_output_path, general_lyrs, tiler_output_dir
     )  # ***
+"""
